@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squamish Plants</title>
+
+ 
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    <!-- Turf and jQuery code. -->
+    <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script> 
+    <script src="https://unpkg.c,om/togeojson"></script>
+
+
+  <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+
+        #map {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .popup_title {
+            position: absolute;
+            top: 40%;
+            bottom: 60%;
+            left: 50%;
+            width: 70%;
+            /* 1/3 of the viewport width */
+            height: 70%;
+            /* 1/3 of the viewport height */
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .popup_title img {
+            width: 100%;
+            /* Ensure image fills the container width */
+            height: auto;
+            /* Maintain aspect ratio */
+            display: block;
+            /* Prevents extra space below image */
+        }
+
+        .popup_title .close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    
+        .button {
+            position: absolute;
+            border: none;
+            color: white;
+            /* White text */
+            padding: 15px 32px;
+            /* Padding */
+            text-align: center;
+            /* Center text */
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            /* Cursor on hover */
+        }
+
+        .button:hover {
+            background-color: #c8a4d4;
+            /* Darker green background on hover */
+            color: white;
+            /* White text on hover */
+        }
+
+        .mapboxgl-popup {
+            max-width: 400px;
+            font:
+                12px/20px 'Helvetica Neue',
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+    
+        .mapboxgl-ctrl-scale {
+            font-size: 15px; 
+            padding: 8px; 
+        }
+
+        .mapboxgl-ctrl-group button {
+            width: 42px; 
+            height: 42px; 
+        }
+
+        .map-overlay {
+            font:
+                12px/20px 'Helvetica Neue',
+                Arial,
+                Helvetica,
+                sans-serif;
+            background-color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            position: absolute;
+            width: 25%;
+            top: 10px;
+            left: 80%;
+            padding: 10px;
+            display: none;
+        }
+    </style>
+
+</head>
+  
+  
+<body>
+  
+  
+     <style>
+       #menu {
+        position: absolute;
+        z-index: 1;
+        top: 10px;
+        left: 10px;
+        border: none; 
+        border-radius: 6px;
+        width: 130px;
+        font-family: 'Helvetica Heue', Helvetica/ sans-serif;
+    }
+
+    #menu a {
+        font-size: 18px;
+        color: #888888;
+        display: block;
+        margin: 0;
+        padding: 10px 15px;
+        border-radius: 6px; 
+        text-decoration: none;
+        border-bottom: 1px solid #696969;
+        text-align: center;
+        background-color: #ffffff; 
+    }
+
+    #menu a:last-child {
+        border: none;
+    }
+
+    #menu a:hover {
+        background-color: #f8f8f8;
+        color: #888888;
+    }
+
+    #menu a.active {
+        background-color: #888888;
+        color: #ffffff;
+    }
+
+    #menu a.active:hover {
+        background: #888888;
+    }
+
+    #survey-button {
+        background: #888888;
+        color: white;
+        display: block;
+        padding: 20px 15px; 
+        border: none; 
+        border-radius: 6px; 
+        font-size: 25px;
+        font-family: 'Helvetica Heue', Helvetica sans-serif;
+        position: absolute; 
+        bottom: 30px; 
+        right: 8px; 
+        cursor: pointer; 
+        z-index: 1;
+       }
+       
+       #survey-button a {
+         color: #888888
+       }
+       
+      #survey-button a:hover {
+        background-color: #888888; 
+        color: #ffffff; 
+      }
+       
+       #survey-button a.active {
+         background-color: #888888; 
+       }
+       
+       #survey-button a.active:hover {
+         background: #404040; 
+       }
+
+
+       #closures-button {
+        background: #888888;
+        color: white;
+        display: block;
+        padding: 20px 15px; 
+        border: none; 
+        border-radius: 6px; 
+        font-size: 23px;
+        font-family: 'Helvetica Heue', Helvetica sans-serif;
+        position: absolute; 
+        bottom: 100px; 
+        right: 8px; 
+        cursor: pointer; 
+        z-index: 1;
+       }
+       
+       #closures-button a {
+         color: #888888
+       }
+       
+      #closures-button a:hover {
+        background-color: #888888; 
+        color: #ffffff; 
+      }
+       
+       #closures-button a.active {
+         background-color: #888888; 
+       }
+       
+       #closures-button a.active:hover {
+         background: #404040; 
+       }
+    
+  </style>
+  
+    <nav id="menu"></nav>
+    <button id="survey-button" onclick="window.open('https://lizmccleary.github.io/form-website/community_entry_form.html', '_blank')">Community Harvest Form</button>
+    <div id="map"></div>
+
+<img src="https://raw.githubusercontent.com/lizmccleary/Squamish_Access_liz/main/popup-july18.png" width="100%" height="auto" style="border:none;" alt="Popup Image">
+
+    <div id="map-overlay" class="map-overlay"></div>
+  
+    <button id="closures-button" onclick="window.open('https://governmentofbc.maps.arcgis.com/apps/webappviewer/index.html?id=a42873895b3d4ca084ea9730212cacb1', '_blank')">Forest Road Layer</button>
+  
+  <div id="toggle-button">BCGov Forest Road Closures</div>
+  
+
+    <script>
+
+////// map ////////////////////////////////////////////////////
+       	mapboxgl.accessToken = 'pk.eyJ1IjoibGl6bWNjbGVhcnkiLCJhIjoiY2x3amt0dHVkMG4wZzJrbDh6bTF5djV2cyJ9.TeDF2xIPvCR4wmiTdEju8w';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/lizmccleary/clwqx2xyq015f01qea456a8ck',
+        zoom: 9,
+        pitch: 60,
+        bearing: 30,
+        center: [-123.16761577284362, 49.68914344599266]
+    });
+          
+        // add Find My Location to map 
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Add a scale control to the map
+        map.addControl(new mapboxgl.ScaleControl());
+
+        // adding 3d terrain
+        map.on('style.load', () => {
+            map.addSource('mapbox-dem', {
+                'type': 'raster-dem',
+                'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                'tileSize': 512,
+                'maxzoom': 14
+            });
+            // add the DEM source as a terrain layer with exaggerated height
+            map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+        }); 
+      
+//// Start to add layers to build pop-ups and functions off of. ////
+
+    // Wait until the map has finished loading.
+    map.on('load', () => {
+      
+    const canvas = map.getCanvasContainer();
+
+            let start;
+            let current;
+            let box; 
+      
+            map.addSource('tenure-source', {
+                type: 'geojson',
+                data: 'https://raw.githubusercontent.com/lizmccleary/Squamish_Access_liz/main/EXT/Crown_Tenures.geojson' // Replace with the URL of your GeoJSON data
+            });
+      
+                  map.addLayer({
+                id: 'Private-Land',
+                type: 'fill',
+                source: 'tenure-source', 
+                layout: {'visibility': 'none'}, 
+                paint: {
+                    'fill-color': '#708090',
+                    'fill-outline-color': '#708090',
+                    'fill-opacity': 0.60
+                }
+            },
+            );
+
+        /// this is the squamish territory layer 
+            map.addSource('plants_data', {
+                type: 'geojson',
+                data: 'https://raw.githubusercontent.com/lizmccleary/Squamish_Access_liz/main/EXT/updated_plants.geojson' // Replace with the URL of your GeoJSON data
+            });
+      
+      // Define pastel colors
+        const pastelColors = [
+'#FF8BAO', '#FFC2A6', '#D3E5CF', '#CEF4F8', '#FDF0D7',
+            '#C2E9BF', '#F9E795', '#FFE5EC', '#CE9DD9', '#87AFD4'];
+
+        // Function to generate a random pastel color
+        function getRandomPastelColor() {
+            return pastelColors[Math.floor(Math.random() * pastelColors.length)];
+        }
+
+        // Function to assign colors to species
+        function assignColorsToSpecies(species) {
+            const speciesColors = {};
+            species.forEach((sp, index) => {
+                speciesColors[sp] = pastelColors[index % pastelColors.length];
+            });
+            return speciesColors;
+        }
+
+ ///as of JUNE 18th, this layer doesnt show up on map 
+            map.addLayer({
+                id: 'highlighted-plants',
+                type: 'circle',
+                source: 'plants_data', 
+                layout: {
+                  'visibility': 'visible'
+                }, 
+                paint: {
+                    'circle-color': '#AFFF00',
+                    'circle-radius': 5,
+                    'circle-stroke-width': .3,
+                    'circle-stroke-color': '#fff',
+                    'circle-opacity': 0.75
+                },
+                 'filter': ['in', 'Common_Name', '']
+            });
+      //// this is a layer to use later in "Total plants" pop-up 
+      
+      
+              // Get unique species
+            const uniqueSpecies = new Set();
+            fetch('https://raw.githubusercontent.com/lizmccleary/Squamish_Access_liz/main/EXT/updated_plants.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    data.features.forEach(feature => {
+                        uniqueSpecies.add(feature.properties.feature_collection_name);
+                    });
+
+                    const speciesColors = assignColorsToSpecies([...uniqueSpecies]);
+
+                    // Add layer with pastel colors for each species
+                    map.addLayer({
+                        id: 'Sḵwx̱wú7mesh-Plants',
+                        type: 'circle',
+                        source: 'plants_data',
+                        layout: {
+                            'visibility': 'visible'
+                        },
+                        paint: {
+                            'circle-color': [
+                                'match',
+                                ['get', 'feature_collection_name'],
+                                ...Object.entries(speciesColors).flat(),
+                                '#11b4da' // default color
+                            ],
+                            'circle-radius': 6,
+                            'circle-opacity': 0.75, 
+                            'circle-stroke-color': '#808080',
+                            'circle-stroke-width': 0.5, 
+                            'circle-blur': 0.2
+                        }
+                    });
+                });
+      
+        //// This is the Squamish territory layer /////
+            map.addSource('squam-boundary', {
+                type: 'geojson',
+                data: 'https://raw.githubusercontent.com/lizmccleary/Squamish_Access_liz/main/EXT/squamish_boundary.geojson' // Replace with the URL of your GeoJSON data
+            });
+
+            map.addLayer({
+                id: 'Sḵwx̱wú7mesh-Territory',
+                type: 'fill',
+                source: 'squam-boundary',
+                layout: {
+                    'visibility': 'visible'
+                },
+                paint: {
+                    'fill-color': '#FFB6C1',
+                    'fill-outline-color': '#FFB6C1',
+                    'fill-opacity': 0.60
+                }
+            },
+            );
+          
+        ///// This is the BC Parks layer /////
+            map.addSource('parks_boundary', {
+                type: 'geojson',
+                data: 'https://raw.githubusercontent.com/lizmccleary/Squamish_Access_liz/main/EXT/parks_boundary.geojson' // Replace with the URL of your GeoJSON data
+            });
+
+            map.addLayer({
+                id: 'BC-Parks',
+                type: 'fill',
+                source: 'parks_boundary',
+                layout: {
+                    'visibility': 'none'
+                },
+                paint: {
+                    'fill-color': '#367c2b',
+                    'fill-outline-color': '#367c2b',
+                    'fill-opacity': 0.75
+                }
+            },
+            );
+      
+      
+        /// Run function that fetches Open511 geojson data and puts it into output.geojson ///
+          const Open511API = 'https://api.open511.gov.bc.ca/events?format=json&status=ACTIVE';
+
+        fetch(Open511API)
+            .then(response => response.json())
+            .then(data => {
+                data.events.forEach(event => {
+                    if (event.geography) {
+                        const geometryType = event.geography.type;
+                        const coordinates = event.geography.coordinates;
+
+                    if (geometryType === 'LineString') {
+                        addLineLayer(event, coordinates);
+                    } else if (geometryType === 'Point') {
+                        addPointLayer(event, coordinates);
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching traffic data:', error));
+
+    // Function to add a line layer to the map
+    function addLineLayer(event, coordinates) {
+        const lineColor = getLineColor(event.severity);
+
+        map.addLayer({
+            'id': event.id,
+            'type': 'line',
+            'source': {
+                'type': 'geojson',
+                'data': {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'LineString',
+                        'coordinates': coordinates
+                    },
+                    'properties': {
+                        'headline': event.headline,
+                        'description': event.description,
+                        'severity': event.severity,
+                        'created': event.created,
+                        'updated': event.updated,
+                        'schedule': formatSchedule(event.schedule)
+                    }
+                }
+            },
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': lineColor,
+                'line-width': 8
+            }
+        });
+
+        addLayerPopup(event.id);
+    }
+
+    // Function to add a point layer to the map
+    function addPointLayer(event, coordinates) {
+        map.addLayer({
+            'id': event.id,
+            'type': 'circle',
+            'source': {
+                'type': 'geojson',
+                'data': {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': coordinates
+                    },
+                    'properties': {
+                        'headline': event.headline,
+                        'description': event.description,
+                        'severity': event.severity,
+                        'created': event.created,
+                        'updated': event.updated,
+                        'schedule': formatSchedule(event.schedule)
+                    }
+                }
+            },
+            'paint': {
+                'circle-radius': 8,
+                'circle-color': getLineColor(event.severity)
+            }
+        });
+
+        addLayerPopup(event.id);
+    }
+
+    // Function to add DriveBC popup to a layer ////
+    function addLayerPopup(layerId) {
+        map.on('click', layerId, (e) => {
+            const coordinates = e.lngLat;
+            const properties = e.features[0].properties;
+
+            const popup = new mapboxgl.Popup({
+                closeOnMove: true,
+                maxWidth: '300px',
+                anchor: 'bottom'
+            })
+                .setLngLat(coordinates)
+                .setHTML(`<h3>${properties.headline}</h3>
+                          <p><strong>Description:</strong> ${properties.description}</p>
+                          <p><strong>Severity:</strong> ${properties.severity}</p>
+                          <p><strong>Created:</strong> ${properties.created}</p>
+                          <p><strong>Updated:</strong> ${properties.updated}</p>
+                          <p><strong>Schedule:</strong> ${properties.schedule}</p>`)
+                .addTo(map);
+
+            // Adjust popup position if necessary
+            const popupContainer = popup.getElement();
+            const mapContainer = map.getCanvasContainer();
+            const mapRect = mapContainer.getBoundingClientRect();
+            const popupRect = popupContainer.getBoundingClientRect();
+
+            if (popupRect.top < mapRect.top) {
+                popup.setOffset([0, popupRect.height / 2]);
+            }
+        });
+
+        map.on('mouseenter', layerId, () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        map.on('mouseleave', layerId, () => {
+            map.getCanvas().style.cursor = '';
+        });
+    }
+
+    // Function to determine line color based on severity of report 
+    function getLineColor(severity) {
+        if (severity === 'MINOR') {
+            return '#FF851B'; // Orange for minor 
+        } else if (severity === 'MAJOR') {
+            return '#FF4136'; // Red for major 
+        } else {
+            return '#FFFF66'; // All other events will be yellow 
+        }
+    }
+
+    // Function to format schedule information
+    function formatSchedule(schedule) {
+        if (!schedule || !schedule.recurring_schedules) return 'N/A';
+        return schedule.recurring_schedules.map(s => {
+            return `Days: ${s.days.join(', ')}<br>
+                    Start Date: ${s.start_date}<br>
+                    End Date: ${s.end_date}<br>
+                    Daily Start Time: ${s.daily_start_time}<br>
+                    Daily End Time: ${s.daily_end_time}`;
+        }).join('<br><br>');
+    }
+  
+   // Fetch traffic data when the map loads
+    map.on('load', fetchTrafficData);
+      
+    });   
+      
+// After the last frame rendered before the map enters an "idle" state.
+    map.on('idle', () => {
+        // If these three layers were not added to the map, abort
+        if (!map.getLayer('Sḵwx̱wú7mesh-Plants') || !map.getLayer('Sḵwx̱wú7mesh-Territory') || !map.getLayer('Private-Land') || !map.getLayer('BC-Parks')) {
+            return;
+        }
+
+        // Enumerate ids of the layers.
+        const toggleableLayerIds = ['Sḵwx̱wú7mesh-Plants', 'Sḵwx̱wú7mesh-Territory', 'Private-Land', 'BC-Parks'];
+
+        // Set up the corresponding toggle button for each layer.
+        for (const id of toggleableLayerIds) {
+            // Skip layers that already have a button set up.
+            if (document.getElementById(id)) {
+                continue;
+            }
+
+            // Create a link.
+            const link = document.createElement('a');
+            link.id = id;
+            link.href = '#';
+            link.textContent = id;
+            link.className = 'active';
+          
+          // Set initial class based on layer visibility
+        const visibility = map.getLayoutProperty(id, 'visibility');
+        link.className = (visibility === 'visible') ? 'active' : '';
+
+            // Show or hide layer when the toggle is clicked.
+            link.onclick = function (e) {
+                const clickedLayer = this.textContent;
+                e.preventDefault();
+                e.stopPropagation();
+
+                const visibility = map.getLayoutProperty(
+                    clickedLayer,
+                    'visibility'
+                );
+
+               // Toggle layer visibility by changing the layout object's visibility property.
+                if (visibility === 'visible') {
+                    map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+                    this.className = '';
+                } else {
+                    this.className = 'active';
+                    map.setLayoutProperty(
+                        clickedLayer,
+                        'visibility',
+                        'visible'
+                    );
+                }
+            };
+
+            const layers = document.getElementById('menu');
+            layers.appendChild(link);
+        }
+    });
+            
+/// Create popup for squam-plants ///
+            map.on('click', 'Sḵwx̱wú7mesh-Plants', (e) => {
+                const coordinates = e.lngLat;
+                const properties = e.features[0].properties;
+
+                new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(`<strong>Traditional Name:</strong> ${properties.squamish_name}<br><strong>Common Name:</strong> ${properties.Common_Name}`)
+                    .addTo(map);
+            });
+
+            // Change the cursor to a pointer when the mouse is over the private_land layer
+            map.on('mouseenter', 'Sḵwx̱wú7mesh-Plants', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            // Change it back to a pointer when it leaves
+            map.on('mouseleave', 'Sḵwx̱wú7mesh-Plants', () => {
+                map.getCanvas().style.cursor = '';
+            });
+      
+      
+/// Add a popup for private land layer ////
+            map.on('click', 'Private-Land', (e) => {
+                const coordinates = e.lngLat;
+                const properties = e.features[0].properties;
+
+                new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(`<strong>Tenure Stage:</strong> ${properties.TENURE_STAGE}<br><strong>Tenure Purpose:</strong> ${properties.TENURE_PURPOSE}<br><strong>Tenure Subpurpose:</strong> ${properties.TENURE_SUBPURPOSE}<br><strong>Tenure Location:</strong> ${properties.TENURE_LOCATION}`)
+                    .addTo(map);
+            });
+
+            // Change the cursor to a pointer when the mouse is over the private_land layer
+            map.on('mouseenter', 'Private_Land', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            // Change it back to a pointer when it leaves
+            map.on('mouseleave', 'Private_Land', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+    </script>
+        
+</body>
+
+</html>
